@@ -1,12 +1,12 @@
 function plot_iter_curve(best_hist_gea, best_hist_pso, best_hist_bat, Num_iterations, func_name)
 
-semilogy(best_hist_gea(:,1), best_hist_gea(:,2), 'r.-');
+semilogy(best_hist_gea(:,1), best_hist_gea(:,2), 'ro-');
 hold on
-semilogy(best_hist_pso(:,1), best_hist_pso(:,2), 'b.-');
+semilogy(best_hist_pso(:,1), best_hist_pso(:,2), 'bo-');
 hold on
-semilogy(best_hist_bat(:,1), best_hist_bat(:,2), 'g.-');
+semilogy(best_hist_bat(:,1), best_hist_bat(:,2), 'bo-');
 hold on
-axis([0 Num_iterations -20 1000]);
+axis([0 Num_iterations -20 100]);
 switch func_name
     case 'F1' 
         title('Error results', 'FontSize', 16); 

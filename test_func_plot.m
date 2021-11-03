@@ -8,7 +8,7 @@ function [coordinates,range,func_min] = test_func_plot(func_name)
 
 subplot(1,2,1);
 
-Ngrid = 100;    % number of points on grid, dx dy = spacing between pts
+Ngrid = 200;    % number of points on grid, dx dy = spacing between pts
 dx = (range(2) - range(1))/Ngrid;
 dy = (range(4) - range(3))/Ngrid;
 xgrid = range(1):dx:range(2);
@@ -48,14 +48,25 @@ switch func_name
         title('Double-loop, two dof optimization', 'FontSize', 16);
         
     case 'F7'
-        coordinates.z=fobj(coordinates.x,coordinates.y);
-        surfc(coordinates.x,coordinates.y,coordinates.z);
+        load functionplot_F1.mat;
+        coordinates.z=zplot;
+        coordinates.x = xplot;
+        coordinates.y = yplot;
+        surfc(xplot,yplot,zplot);
+        title('Non-collocated control optimization','FontSize',16);
+        
+    case 'F8'
+        load functionplot_F2.mat;
+        coordinates.z = zplot;
+        coordinates.x = xplot;
+        coordinates.y = yplot;
+        surfc(xplot,yplot,zplot);
         title('Non-collocated control optimization','FontSize',16);
                       
 end    
 
 subplot(1,2,2);
-contour(coordinates.x,coordinates.y,coordinates.z, 15);
+contour(coordinates.x,coordinates.y,coordinates.z, 50);
 
 
 end

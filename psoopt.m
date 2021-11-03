@@ -26,15 +26,15 @@ end
 % Plotting function
 
 switch func_name
-    case {'F1','F2','F3','F4','F5','F6','F7'}
+    case {'F1','F2','F3','F4','F5','F6','F7','F8'}
         
         figure
         [coordinates,range,func_min] = test_func_plot(func_name);    % Show function curve in 3-d
 
     otherwise
-        coordinates.xplot = [];
-        coordinates.yplot = [];
-        coordinates.zplot = [];
+        coordinates.x = [];
+        coordinates.y = [];
+        coordinates.z = [];
         range = [];
         func_min = [];
         

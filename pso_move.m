@@ -107,6 +107,14 @@ for iter = 1: Num_iterations,
             plot(Sol(:,1), Sol(:,2), 'b.', x_pso(1), x_pso(2),'r*');
             axis([lb(1) ub(1) lb(2) ub(2)]);
             
+        case 'F8'
+            hold off;
+            contour(xplot,yplot,zplot, 50); 
+            hold on;
+            title('Non-collocated control using GEA', 'FontSize', 16); 
+            plot(Sol(:,1), Sol(:,2), 'b.', x_pso(1), x_pso(2),'r*');
+            axis([lb(1) ub(1) lb(2) ub(2)]);
+            
         otherwise
             scatter(iter,f_pso,'b.');
             hold on
@@ -140,7 +148,7 @@ for iter = 1: Num_iterations,
     % 3 - Evaluate objective function at new location
 
     for ii = 1:n
-        fitness_pso(ii) = fobj(Sol(ii,[1:d]));
+        fitness_pso(ii) = fobj(Sol(ii,[1:d]),pars);
 
         % 4 - Find current best for each particle
         

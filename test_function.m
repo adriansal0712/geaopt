@@ -70,6 +70,15 @@ switch F
         
         func_min = -2.3291;
         
+    case 'F8'
+        
+        fobj = @F8;
+        range = [0 500 -500 100];
+
+        dim = 3;
+        
+        func_min = -0.3943;
+        
 end
 end 
 
@@ -138,6 +147,101 @@ for i = 1:size(x,1)
     end
 end
 
+end
+
+
+function o = F8(x,y)
+
+% Haik's Setup
+    % Mass
+    ma = 0.5; m0 = 1; m1 = 0.5; m2 = 1.15;
+
+    % Stiffness
+    ka = 400; k0 = 410; k1 = 1450; k2 = 380; k3 = 405; kp = 1500;
+
+    % Damping
+    ca = 1.9; c0 = 2.1; c1 = 4.9; c2 = 2.2; c3 = 2; cp = 5;
+
+    % State-matrix
+    A = [0  1   0   0   0   0   0   0;
+        -(k0+k3+kp)/m0  -(c0+c3+cp)/m0  k0/m0   c0/m0   k3/m0   c3/m0   0   0;
+        0   0   0   1   0   0   0   0;
+        k0/m1   c0/m1   -(k0+k1)/m1     -(c0+c1)/m1     k1/m1   c1/m1   0   0;
+        0   0   0   0   0   1   0   0;
+        k3/m2   c3/m2   k1/m2   c1/m2   -(k1+k2+k3+ka)/m2   -(c1+c2+c3+ca)/m2   ka/m2   ca/m2;
+        0   0   0   0   0   0   0   1;
+        0   0   0   0   ka/ma   ca/ma   -ka/ma  -ca/ma]
+
+
+    % System input matrix
+    B = [0  1/m0    0   0   0   0   0   0]';
+    % System output matrix
+    C = [0  0   1   0   0   0   0   0];
+
+    % Feed-through matrix
+    D = 0;
+
+    % Input Matrix (Controllability)
+    B1 = [
+            0   0   0   0   0  -1/m2 0   1/ma;
+            ]';
+    C1 = [  
+            0   0   0   0   -1  0   1   0;
+            0   0   0   0   1   0   0   0;
+            0   0   0   0   0   1   0   0;
+            1   0   0   1   0   0   0   0
+            ];
+
+
+    n = size(A,1);  % order of the system
+    p = size(C1,1); % degrees of freedom of controller = size(K,2)
+    q = size(B1,2); % no of control inputs
+    hA = [0];
+
+    tds = tds_create({A},hA,{B},[0],{C},[0]);
+    options = tdsrootsoptions;                  % Options for computing roots
+    options.minimal_real_part = -0.2;   
+    options.fixN=0;
+    tds_check_valid(tds);
+
+    w = 19;         % frequency of vibration ot be supressed
+    values = sort([w*j,-w*j]);
+    m = size(values,2);     % number of zeros to be placed
+
+    ipdelay = 0;
+
+    pars = parInput(tds,B1,C1,ipdelay,w);
+              
+    
+    for i = 1:size(x,1)
+        for k = 1:size(y,1)
+
+            % Reshaping K2
+            K2 = zeros(p,q);                    % matrix of dim(pxq) = K2'
+            K2(m+1:end) = [x(i,k),y(i,k)]';     % elements 1:m are zeros
+                                                % elements m+1:end take the values from opt
+            K2 = K2';
+    
+            tds2 = tds_create({tds.A{:},B1*K2*C1},[tds.hA,ipdelay],...
+                    {tds.B1{:}},[tds.hB1],{tds.C1{:}},[tds.hC1]);
+    
+            [K0 G] = assign_zeros(tds2,values,B1,C1,ipdelay);
+            K1 = [K0' zeros(1,(p-m))];      % [g^T 0]
+            I = eye(q);                     % Identity
+            e1 = I(:,1);                    % Unit vector to extract the 1st column of the B1
+
+            K = e1*K1 + K2;      % Controller gain matrix
+
+            tds3 = tds_create({tds.A{:},B1*K*C1},[tds.hA,ipdelay],{tds.B1{:}},[0],{tds.C1{:}},[0]);
+            tds3.hD = [];
+            options.minimal_real_part = -0.5;
+
+            eigenvalues = compute_roots_DDAE(tds3,options);
+            eigenvalues.l0;
+            o(i,k) = max(real(eigenvalues.l0));
+            
+        end
+    end
 
 end
     
