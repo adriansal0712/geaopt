@@ -28,7 +28,6 @@ Q=zeros(n,1);                                   % frequency - for Cao's method o
 
 [Sol, Fitness, fobj, lb,ub] = initpar(pars,options);   % Call init_gea function to 
                                                 % initialize solutions
-
                                                 
 % Find current best
 [f_gea, I] = min(Fitness);
@@ -92,7 +91,15 @@ for iter = 1: Num_iterations
             hold off;
             contour(xplot,yplot,zplot, 50); 
             hold on;
-            title('Michalewicz function using GEA', 'FontSize', 16); 
+            title('Non-collocated control using GEA', 'FontSize', 16); 
+            plot(Sol(:,1), Sol(:,2), 'b.', x_gea(1), x_gea(2),'r*');
+            axis([lb(1) ub(1) lb(2) ub(2)]);
+            
+        case 'F8'
+            hold off;
+            contour(xplot,yplot,zplot, 50); 
+            hold on;
+            title('Non-collocated control using GEA', 'FontSize', 16); 
             plot(Sol(:,1), Sol(:,2), 'b.', x_gea(1), x_gea(2),'r*');
             axis([lb(1) ub(1) lb(2) ub(2)]);
             
@@ -106,42 +113,143 @@ for iter = 1: Num_iterations
             
     end
     
-    
+%     % Using for loop 
+%     for i = 1:n,
+%         % 1 - Crossover operation - using original GEA method
+%         % Check condition: new position must be within bounds
+%         S(i,:) = Sol(i,:);
+%         beta = 2*rand;
+%         S(i,:)=Sol(i,:)+(x_gea-Sol(i,:))*beta;
+%         
+%         
+%         % Simple bounds
+%         Flag4up=S(i,:)>ub;
+%         Flag4low=S(i,:)<lb;
+%         S(i,:)=S(i,:).*(~(Flag4up+Flag4low))+ub.*Flag4up+lb.*Flag4low;
+%         
+%         % 2 - Mutation operator
+%         % Mutation using individual parameters
+%         c = 0.2;                            % limiting parameter
+%         p = c*log(Tmax/(Tmax-iter));                    %   mutation probability
+% 
+%         Mx = max(S(i,:)-lb, ub - S(i,:));
+%         
+%         r = rand(1,d)<p;
+%         
+%         S(i,:) = S(i,:).*(~r) + (S(i,:) + unifrnd(-1,1,[1 d]).*Mx).*(r); % applying mutation to individual dimensions only
+%        
+%         % Simple bounds
+%         Flag4up=S(i,:)>ub;
+%         Flag4low=S(i,:)<lb;
+%         S(i,:)=S(i,:).*(~(Flag4up+Flag4low))+ub.*Flag4up+lb.*Flag4low;
+%         
+%         % 3 - Local Search
+%         % Local search using individual parameters
+%         L = 0.1.*(ub - lb);        % Local search vector
+% 
+%         % Local search using individual parameters
+%         r = rand(1,d)<p;
+% 
+%         S(i,:) = S(i,:).*(~r) + r.*(S(i,:) + unifrnd(-1,1,[1 d]).*L); % applying local search to individual dimensions only
+% 
+%         % Simple bounds
+%         Flag4up=S(i,:)>ub;
+%         Flag4low=S(i,:)<lb;
+%         S(i,:)=S(i,:).*(~(Flag4up+Flag4low))+ub.*Flag4up+lb.*Flag4low;
+%         
+%         
+%         % Selection
+%         if fobj(S(i,:),pars) < Fitness(i),
+%             Fitness(i) = fobj(S(i,:),pars);
+%             Sol(i,:) = S(i,:);
+%         end
+%             
+%         % if minimum value is lower than the global minimum, select individual
+%         if Fitness(i) < f_gea,
+%             x_gea = Sol(i,:);
+%             f_gea = Fitness(i);
+%         end
+%         
+%     end
+%     
+%     drawnow;
+%     
+%     best_hist(iter,:) = [iter, f_gea];
+%     x_gea
+%     f_gea
+% end
+%     
+        
+% Vectorized method        
     S = Sol;
 
-% 1 - Crossover operation - using original GEA method
-% Check condition: new position must be within bounds
-
+% % 1 - Crossover operation - using original GEA method
+% % Check condition: new position must be within bounds
+    
     beta = 2*rand([n,1]);                                          % step length of position increment
-
-
     S = Sol + (x_gea-Sol).*beta;
 
-        
+% %     Simplebounds
     Flag4up=S>ub;
     Flag4low=S<lb;
     S=S.*(~(Flag4up+Flag4low))+ub.*Flag4up+lb.*Flag4low;
 
-    % 2 - Mutation operator
+% % 2 - Mutation operator
     c = 0.2;                            % limiting parameter
     p = c*log(Tmax/(Tmax-iter));                    %   mutation probability
 
     Mx = max(S-lb, ub - S);
 
-    % Mutation using individual parameters
-        
-%         if rand < p                         % Perform mutation only if rand<p
-
-%             r = rand(1,d)<p;
+% %     Mutation using individual parameters             
     r = rand(n,d)<p;
-
-    S = S.*(~r) + (S + unifrnd(-1,1,[n d]).*Mx).*(r); % applying mutation to individual dimensions only
-       
+    S = S.*(~r) + (S + unifrnd(-1,1,[1 d]).*Mx).*(r);
     Flag4up=S>ub;
     Flag4low=S<lb;
     S=S.*(~(Flag4up+Flag4low))+ub.*Flag4up+lb.*Flag4low;
+
+% % 3 - Local Search
+% %   Local search using individual paramameters
+        
+    r = rand(n,d)<p;
+    L = 0.1.*(ub - lb);        % Local search vector
+    r = rand(1,d)<p;
+    S = S.*(~r) + (S + unifrnd(-1,1,[n d]).*L).*(r);
+               
+    Flag4up=S>ub;
+    Flag4low=S<lb;
+    S=S.*(~(Flag4up+Flag4low))+ub.*Flag4up+lb.*Flag4low;
+
+% % 4 - Selection
+    for i = 1:n
+%             Fitness(i) = fobj(S(i,:),pars);
+
+            fitnessnew = fobj(S(i,:),pars);
+            if fitnessnew < Fitness(i),
+                Fitness(i) = fitnessnew;
+                Sol(i,:) = S(i,:);
+            end
             
-%         end
+            % if minimum value is lower than the global minimum, select individual
+            if Fitness(i) < f_gea,
+                x_gea = Sol(i,:);
+                f_gea = Fitness(i);
+            end
+            
+    end
+
+    drawnow;
+    
+    best_hist(iter,:) = [iter, f_gea];
+%     hold off;
+
+    
+end
+
+% END of VECTORIZED METHOD
+          
+
+%     end 
+            
 
     % End of Mutation using individual parameters
 
@@ -154,27 +262,7 @@ for iter = 1: Num_iterations
 %     Flag4low=S(i,[1:2])<lb;
 %     S(i,[1:2])=S(i,[1:2]).*(~(Flag4up+Flag4low))+ub.*Flag4up+lb.*Flag4low;
 
-        % 3 - Local Search
-
-
-        % Local search
         
-%         if rand<p                      % Perform local search only if rand<p
-            L = 0.1.*(ub - lb);        % Local search vector
-
-            % Local search using individual parameters
-            r = rand(n,d)<p;
-
-%             S(i,:) = (S(i,:).*(~r) + r.*(S(i,:) + unifrnd(-1,1,[1 d]).*L); % applying local search to individual dimensions only
-
-            S = S.*(~r) + (S + unifrnd(-1,1,[n d]).*L).*(r);
-            
-            
-            Flag4up=S>ub;
-            Flag4low=S<lb;
-            S=S.*(~(Flag4up+Flag4low))+ub.*Flag4up+lb.*Flag4low;
-%         end
-            
         % Applying local search to complete parameters
     %     if rand<p,
     %         S(i,[1 2]) = best([1 2]) + L.*unifrnd(-1,1,[1 2]);
@@ -189,25 +277,24 @@ for iter = 1: Num_iterations
         % End of Local search
 
 
-        % Select new individual. If objective function is lower than in
-        % previous iteration, select individual
+        
 
-        for i = 1:n
+%         for i = 1:n
 %             Fitness(i) = fobj(S(i,:),pars);
             
             
-            if fobj(S(i,:),pars) < Fitness(i),
-                Fitness(i) = fobj(S(i,:),pars);
-                Sol(i,:) = S(i,:);
-            end
+%             if fobj(S(i,:),pars) < Fitness(i),
+%                 Fitness(i) = fobj(S(i,:),pars);
+%                 Sol(i,:) = S(i,:);
+%             end
+%             
+%             % if minimum value is lower than the global minimum, select individual
+%             if Fitness(i) < f_gea,
+%                 x_gea = Sol(i,:);
+%                 f_gea = Fitness(i);
+%             end
             
-            % if minimum value is lower than the global minimum, select individual
-            if Fitness(i) < f_gea,
-                x_gea = Sol(i,:);
-                f_gea = Fitness(i);
-            end
-            
-        end
+%         end
           
 %         % Find current best
 %         [f_gea, I] = min(Fitness);
@@ -216,12 +303,6 @@ for iter = 1: Num_iterations
 
 %     end 
     
-    drawnow;
-    
-    best_hist(iter,:) = [iter, f_gea];
-%     hold off;
 
-    
-end
 
 end

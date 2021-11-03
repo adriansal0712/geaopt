@@ -11,12 +11,14 @@ func_name = pars.fgname;
 
 if ~isfield(options, 'Num_iterations')
     Num_iterations = 10*d;
+    options.Num_iterations = Num_iterations;
 else 
     Num_iterations = options.Num_iterations;
 end
 
 if ~isfield(options, 'n')
     n = 10*d;
+    options.n = n;
 else 
     n = options.n;
 end
@@ -24,7 +26,7 @@ end
 % Plotting function
 
 switch func_name
-    case {'F1','F2','F3','F4','F5','F6','F7'}       
+    case {'F1','F2','F3','F4','F5','F6','F7','F8'}       
         % Plot optimization curves, valid for predefined functions only
         
         figure

@@ -97,6 +97,14 @@ for iter = 1: Num_iterations
             plot(Sol(:,1), Sol(:,2), 'b.', best(1), best(2),'r*');
             axis([lb(1) ub(1) lb(2) ub(2)]);
             
+        case 'F8'
+            hold off;
+            contour(xplot,yplot,zplot, 50); 
+            hold on;
+            title('Non-collocated control using GEA', 'FontSize', 16); 
+            plot(Sol(:,1), Sol(:,2), 'b.', best(1), best(2),'r*');
+            axis([lb(1) ub(1) lb(2) ub(2)]);
+            
         otherwise
             scatter(iter,fmin_gea,'b.');
             hold on

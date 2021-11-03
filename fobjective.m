@@ -16,7 +16,7 @@ switch func_name
         ub = 100*ones(1,d);
         func_min = 0;
         
-        case 'F2'               % Schwefer 2.22 function
+    case 'F2'               % Schwefer 2.22 function
         fobj = @F2;
         lb = -15*ones(1,d);
         ub = 15*ones(1,d);
@@ -54,6 +54,15 @@ switch func_name
         ub = [range(2),range(4)];
 
         func_min = -2.3291;
+        
+    case 'F8'
+        
+        fobj = @F8;
+        range = [0 100 -100 0];
+        lb = [range(1),range(3)];
+        ub = [range(2),range(4)];
+
+        func_min = -0.3943;
         
     otherwise
         fobj = @FX;
@@ -158,12 +167,22 @@ o = max(real(eigenvalues.l0));
 
 end
 
+function o = F8(x,pars)
+
+    options = tdsrootsoptions;                  % Options for computing roots
+    options.minimal_real_part = -0.2;   
+    options.fixN=0;
+    options.minimal_real_part = -0.5;
+
+    o = compute_gradient(x,pars);
+
+
+end
+
 function o = FX(x,pars)
 
-addpath("relay_id");    % Add path for the relay-identification part
-
-x = x';
-func = str2func(pars.fgname);
-o = func(x,pars);
+    x = x';
+    func = str2func(pars.fgname);
+    o = func(x,pars);
 
 end

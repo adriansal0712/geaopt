@@ -114,6 +114,13 @@ for iter = 1: Num_iterations,
             plot(Sol(:,1), Sol(:,2), 'b.', x_bat(1), x_bat(2),'r*');
             axis([lb(1) ub(1) lb(2) ub(2)]);
             
+        case 'F8'
+            hold off;
+            contour(xplot,yplot,zplot, 50); 
+            hold on;
+            title('Non-collocated control using GEA', 'FontSize', 16); 
+            plot(Sol(:,1), Sol(:,2), 'b.', x_bat(1), x_bat(2),'r*');
+            
         otherwise
             scatter(iter,f_bat,'b.');
             hold on
@@ -154,7 +161,7 @@ for iter = 1: Num_iterations,
     %         epsi = unifrnd(-1,1, [1 2]);
     %         S_bat(i,[1 2]) = Sol(i,[1 2]) + epsi*A;  % *mean(A);
 
-        fitnessnew = fobj(S(i,:)); % calculate fitness function
+        fitnessnew = fobj(S(i,:),pars); % calculate fitness function
 
         if fitnessnew < Fitness(i) & rand>A,
             Fitness(i) = fitnessnew;
